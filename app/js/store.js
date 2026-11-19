@@ -1,103 +1,129 @@
-var STORE_KEY = 'leonida-platinum-v1';
+// Leonida Platinum — saved progress store.
+//
+// Everything the player ticks is kept in one small object in localStorage,
+// under the key LEONIDA_KEY. The object is versioned so a future shape can
+// migrate instead of wiping the player's checklist. Nothing here touches
+// the network: the guide works with the network off, and so does saving.
 
-function blankState() {
-  return { earned: [], counts: {}, completion: [], spoiler: false, selected: null };
+export const LEONIDA_KEY = "leonida-platinum-v1";
+
+export function defaultState() {
+  return {
+    // Trophy ids the player has marked earned.
+    earned: [],
+    // Per-trophy counters for the counted trophies, e.g. {"cunning-stunts": 120}.
+    counts: {},
+    // Roadmap task indexes the player has ticked, e.g. [0, 1, 2].
+    completion: [],
+    // Spoiler setting: true hides hidden trophy names until they are earned.
+    spoiler: false,
+    // Currently open trophy in the detail pane, or null.
+    selected: null,
+    // Checklist controls (not saved per trophy, but kept in the same object).
+    sort: "roadmap",
+    kind: "all",
+    grade: "all",
+    stage: "all",
+    query: "",
+    showEarned: "all",
+    view: "checklist",
+  };
 }
 
-function loadState() {
+export function loadState() {
   try {
-    var raw = window.localStorage.getItem(STORE_KEY);
-    if (!raw) return blankState();
-    var parsed = JSON.parse(raw);
-    var state = blankState();
-    if (Array.isArray(parsed.earned)) state.earned = parsed.earned.slice();
-    if (parsed.counts && typeof parsed.counts === 'object') state.counts = parsed.counts;
-    if (Array.isArray(parsed.completion)) state.completion = parsed.completion.slice();
-    if (typeof parsed.spoiler === 'boolean') state.spoiler = parsed.spoiler;
-    if (typeof parsed.selected === 'string' || parsed.selected === null) state.selected = parsed.selected;
+    const raw = localStorage.getItem(LEONIDA_KEY);
+    if (!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return defaultState();
+    const state = defaultState();
+    for (const key of Object.keys(state)) {
+      if (parsed[key] !== undefined) state[key] = parsed[key];
+    }
+    // Guard the shapes the UI depends on.
+    if (!Array.isArray(state.earned)) state.earned = [];
+    if (!state.counts || typeof state.counts !== "object") state.counts = {};
+    if (!Array.isArray(state.completion)) state.completion = [];
     return state;
-  } catch (err) {
-    return blankState();
+  } catch {
+    return defaultState();
   }
 }
 
-function saveState(state) {
+export function saveState(state) {
   try {
-    window.localStorage.setItem(STORE_KEY, JSON.stringify(state));
-  } catch (err) {
-    // storage full or unavailable; the in-memory state still works
+    localStorage.setItem(LEONIDA_KEY, JSON.stringify(state));
+  } catch {
+    // Storage full or blocked: the guide still works, it just does not persist.
   }
 }
 
-function isEarned(state, id) {
-  return state.earned.indexOf(id) !== -1;
+export function isEarned(state, id) {
+  return state.earned.includes(id);
 }
 
-function toggleEarned(state, id) {
-  var at = state.earned.indexOf(id);
+export function toggleEarned(state, id) {
+  const at = state.earned.indexOf(id);
   if (at === -1) state.earned.push(id);
   else state.earned.splice(at, 1);
   saveState(state);
   return state;
 }
 
-function getCount(state, id) {
-  var value = state.counts[id];
-  return typeof value === 'number' && value >= 0 ? value : 0;
+export function earnedCount(state) {
+  return state.earned.length;
 }
 
-function setCount(state, id, value) {
-  var n = Math.max(0, Math.floor(Number(value) || 0));
-  state.counts[id] = n;
+export function getCount(state, id) {
+  const n = state.counts[id];
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+}
+
+export function setCount(state, id, n, max) {
+  const value = Math.max(0, Math.min(max || 9999, Math.floor(n) || 0));
+  if (value === 0) delete state.counts[id];
+  else state.counts[id] = value;
   saveState(state);
   return state;
 }
 
-function bumpCount(state, id, delta) {
-  return setCount(state, id, getCount(state, id) + delta);
+export function isTaskDone(state, index) {
+  return state.completion.includes(index);
 }
 
-function isComplete(state, index) {
-  return state.completion.indexOf(index) !== -1;
-}
-
-function toggleComplete(state, index) {
-  var at = state.completion.indexOf(index);
+export function toggleTask(state, index) {
+  const at = state.completion.indexOf(index);
   if (at === -1) state.completion.push(index);
   else state.completion.splice(at, 1);
   saveState(state);
   return state;
 }
 
-function earnedTotal(state) {
-  return state.earned.length;
+export function exportState(state) {
+  return JSON.stringify(
+    { app: "leonida-platinum", version: 1, exportedAt: new Date().toISOString(), state },
+    null,
+    2,
+  );
 }
 
-function selectTrophy(state, id) {
-  state.selected = id;
+export function importState(text) {
+  const parsed = JSON.parse(text);
+  const inner = parsed && parsed.state ? parsed.state : parsed;
+  if (!inner || typeof inner !== "object") throw new Error("not a Leonida Platinum save");
+  const state = defaultState();
+  for (const key of Object.keys(state)) {
+    if (inner[key] !== undefined) state[key] = inner[key];
+  }
+  if (!Array.isArray(state.earned)) state.earned = [];
+  if (!state.counts || typeof state.counts !== "object") state.counts = {};
+  if (!Array.isArray(state.completion)) state.completion = [];
   saveState(state);
   return state;
 }
 
-function setSpoiler(state, on) {
-  state.spoiler = !!on;
+export function resetState() {
+  const state = defaultState();
   saveState(state);
   return state;
 }
-
-window.LeonidaStore = {
-  KEY: STORE_KEY,
-  blank: blankState,
-  load: loadState,
-  save: saveState,
-  isEarned: isEarned,
-  toggleEarned: toggleEarned,
-  getCount: getCount,
-  setCount: setCount,
-  bumpCount: bumpCount,
-  isComplete: isComplete,
-  toggleComplete: toggleComplete,
-  earnedTotal: earnedTotal,
-  select: selectTrophy,
-  setSpoiler: setSpoiler
-};

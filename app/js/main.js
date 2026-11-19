@@ -1,211 +1,306 @@
-(function () {
-  var store = window.LeonidaStore;
-  var filters = window.LeonidaFilters;
-  var views = window.LeonidaViews;
+// Leonida Platinum — boot and wiring.
+//
+// Loads the two data files, renders the shell, and wires every control.
+// The app is plain static files: fetch the JSON once, render from state,
+// and re-render the changed part on every click. No framework, no network
+// after the first load.
 
-  var state = store.load();
-  var data = null;
-  var roadmap = null;
-  var activeKind = 'all';
-  var query = '';
+import {
+  loadState,
+  saveState,
+  toggleEarned,
+  setCount,
+  toggleTask,
+  exportState,
+  importState,
+  resetState,
+  isEarned,
+} from "./store.js";
+import {
+  visibleTrophies,
+  nextUp,
+  hoursLeft,
+  KIND_LABELS,
+  STAGE_LABELS,
+} from "./filters.js";
+import {
+  renderChecklist,
+  renderDetail,
+  renderStrip,
+  renderNextUp,
+  renderRoadmap,
+  renderRoute,
+  renderStats,
+  renderMissables,
+  renderCompletion,
+  renderSources,
+} from "./views.js";
 
-  function $(id) { return document.getElementById(id); }
+const VIEWS = ["checklist", "nextup", "route", "roadmap", "stats", "missables", "complete", "sources"];
+const VIEW_TITLES = {
+  checklist: "Checklist",
+  nextup: "Next up",
+  route: "Route",
+  roadmap: "Roadmap",
+  stats: "Stats",
+  missables: "Missables",
+  complete: "100% checklist",
+  sources: "Sources",
+};
 
-  function currentList() {
-    return filters.apply(data.trophies, activeKind, query);
+let trophies = [];
+let roadmap = null;
+let meta = null;
+let state = loadState();
+
+function $(sel) {
+  return document.querySelector(sel);
+}
+
+function selectedTrophy() {
+  return trophies.find((t) => t.id === state.selected) || null;
+}
+
+function renderHeader() {
+  const earned = state.earned.length;
+  $("#earned-count").textContent = String(earned);
+  $("#earned-total").textContent = `/ ${trophies.length}`;
+  $("#progress-fill").style.width = `${Math.round((earned / trophies.length) * 100)}%`;
+  $("#hours-left").textContent = `~${hoursLeft(trophies, state, roadmap)}h left`;
+}
+
+function paintStrip() {
+  $("#roadmap-strip").innerHTML = renderStrip(roadmap, trophies, state);
+}
+
+function renderList() {
+  const rows = visibleTrophies(trophies, state);
+  $("#trophy-list").innerHTML = renderChecklist(rows, state);
+  const shown = rows.length;
+  $("#result-line").textContent =
+    `Showing ${shown} of ${trophies.length} trophies` +
+    (state.query ? ` for “${state.query}”` : "") +
+    (state.kind !== "all" ? ` · ${KIND_LABELS[state.kind]}` : "") +
+    (state.showEarned !== "all" ? ` · ${state.showEarned === "earned" ? "earned only" : "not earned"}` : "");
+}
+
+function renderDetailPane() {
+  $("#detail-pane").innerHTML = renderDetail(selectedTrophy(), state, meta.sources);
+}
+
+function renderView() {
+  const view = VIEWS.includes(state.view) ? state.view : "checklist";
+  document.querySelectorAll("[data-view]").forEach((b) => {
+    b.classList.toggle("is-active", b.dataset.view === view);
+  });
+  document.querySelectorAll(".view").forEach((el) => {
+    el.hidden = el.id !== `view-${view}`;
+  });
+  if (view === "checklist") {
+    renderList();
+    renderDetailPane();
+  } else if (view === "nextup") {
+    $("#nextup-list").innerHTML = renderNextUp(nextUp(trophies, state, 10));
+    $("#nextup-note").textContent = `${trophies.length - state.earned.length} trophies left — these ten are next in roadmap order.`;
+  } else if (view === "route") {
+    $("#route-body").innerHTML = renderRoute(trophies, state);
+  } else if (view === "roadmap") {
+    $("#roadmap-body").innerHTML = renderRoadmap(roadmap, state);
+  } else if (view === "stats") {
+    $("#stats-body").innerHTML = renderStats(trophies, state, roadmap);
+  } else if (view === "missables") {
+    $("#missables-body").innerHTML = renderMissables(trophies, state);
+  } else if (view === "complete") {
+    $("#complete-body").innerHTML = renderCompletion();
+  } else if (view === "sources") {
+    $("#view-sources").innerHTML = renderSources(meta, trophies);
   }
+  renderHeader();
+  paintStrip();
+}
 
-  function renderHeader() {
-    var count = $('earned-count');
-    if (count) count.textContent = String(store.earnedTotal(state));
-    var total = $('earned-total');
-    if (total) total.textContent = '/ ' + data.trophies.length;
-    var toggle = $('spoiler-toggle');
-    if (toggle) toggle.setAttribute('aria-pressed', state.spoiler ? 'true' : 'false');
-  }
+function setView(view) {
+  if (!VIEWS.includes(view)) return;
+  state.view = view;
+  saveState(state);
+  renderView();
+  window.scrollTo(0, 0);
+}
 
-  function renderChecklist() {
-    var list = currentList();
-    var listEl = $('trophy-list');
-    if (listEl) listEl.innerHTML = views.renderList(list, state, state.spoiler);
-    var line = $('result-line');
-    if (line) line.textContent = 'Showing ' + list.length + ' of ' + data.trophies.length + ' trophies';
-    var strip = $('roadmap-strip');
-    if (strip) strip.innerHTML = views.renderStrip(roadmap.stages, data.trophies, state, state.spoiler);
-    renderDetail();
-  }
+function selectTrophy(id, keepView) {
+  const t = trophies.find((x) => x.id === id);
+  if (!t) return;
+  state.selected = id;
+  saveState(state);
+  if (!keepView) setView("checklist");
+  renderDetailPane();
+  renderList();
+  const row = document.querySelector(`[data-trophy-id="${id}"]`);
+  if (row) row.scrollIntoView({ block: "nearest" });
+}
 
-  function renderDetail() {
-    var pane = $('detail-pane');
-    if (!pane) return;
-    var selected = null;
-    if (state.selected) {
-      selected = data.trophies.filter(function (t) { return t.id === state.selected; })[0] || null;
+function selectNeighbour(dir) {
+  const rows = visibleTrophies(trophies, state);
+  if (!rows.length) return;
+  const i = rows.findIndex((t) => t.id === state.selected);
+  const next = rows[(i + dir + rows.length) % rows.length];
+  selectTrophy(next.id, true);
+}
+
+function download(filename, text) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function wire() {
+  // Tabs.
+  document.querySelectorAll("[data-view]").forEach((b) => {
+    b.addEventListener("click", () => setView(b.dataset.view));
+  });
+  // Toolbar.
+  $("#search").addEventListener("input", (e) => {
+    state.query = e.target.value;
+    saveState(state);
+    renderList();
+  });
+  $("#kind-filter").addEventListener("change", (e) => {
+    state.kind = e.target.value;
+    saveState(state);
+    renderList();
+  });
+  $("#grade-filter").addEventListener("change", (e) => {
+    state.grade = e.target.value;
+    saveState(state);
+    renderList();
+  });
+  $("#stage-filter").addEventListener("change", (e) => {
+    state.stage = e.target.value;
+    saveState(state);
+    renderList();
+  });
+  $("#sort-select").addEventListener("change", (e) => {
+    state.sort = e.target.value;
+    saveState(state);
+    renderList();
+  });
+  $("#earned-filter").addEventListener("change", (e) => {
+    state.showEarned = e.target.value;
+    saveState(state);
+    renderList();
+  });
+  $("#spoiler-toggle").addEventListener("click", () => {
+    state.spoiler = !state.spoiler;
+    saveState(state);
+    $("#spoiler-toggle").textContent = state.spoiler ? "Spoilers: hidden" : "Spoilers: shown";
+    $("#spoiler-toggle").setAttribute("aria-pressed", String(state.spoiler));
+    renderView();
+  });
+  // Roadmap strip jumps to a stage filter.
+  $("#roadmap-strip").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-stage-jump]");
+    if (!btn) return;
+    state.stage = btn.dataset.stageJump;
+    $("#stage-filter").value = state.stage;
+    saveState(state);
+    setView("checklist");
+  });
+  // Checklist clicks: earn boxes, rows, steppers, task checkboxes.
+  document.addEventListener("click", (e) => {
+    const earnBtn = e.target.closest("[data-earn]");
+    if (earnBtn) {
+      e.stopPropagation();
+      toggleEarned(state, earnBtn.dataset.earn);
+      renderView();
+      return;
     }
-    pane.innerHTML = views.renderDetail(selected, data, state, state.spoiler);
-  }
-
-  function renderRoadmap() {
-    var el = $('roadmap-stages');
-    if (el) el.innerHTML = views.renderRoadmap(roadmap.stages, data.trophies, state, state.spoiler);
-  }
-
-  function renderMissables() {
-    var el = $('missables-cards');
-    if (el) el.innerHTML = views.renderMissables(data.trophies, state);
-  }
-
-  function renderNextUp() {
-    var el = $('nextup-list');
-    if (el) el.innerHTML = views.renderNextUp(filters.nextUp(data.trophies, state, 8), state, state.spoiler);
-  }
-
-  function renderComplete() {
-    var el = $('completion-list');
-    if (el) el.innerHTML = views.renderComplete(roadmap.completion, state);
-  }
-
-  function renderSources() {
-    var el = $('sources-body');
-    if (el) el.innerHTML = views.renderSources(data);
-  }
-
-  function renderAll() {
-    renderHeader();
-    renderChecklist();
-    renderRoadmap();
-    renderMissables();
-    renderNextUp();
-    renderComplete();
-    renderSources();
-  }
-
-  function selectTrophy(id) {
-    store.select(state, id);
-    renderChecklist();
-    var pane = $('detail-pane');
-    if (pane) pane.scrollIntoView({ block: 'nearest' });
-  }
-
-  function stepTrophy(id, delta) {
-    var list = currentList();
-    var at = -1;
-    for (var i = 0; i < list.length; i++) {
-      if (list[i].id === id) { at = i; break; }
+    const stepBtn = e.target.closest("[data-step]");
+    if (stepBtn) {
+      const wrap = stepBtn.closest("[data-stepper]");
+      const id = wrap.dataset.stepper;
+      const t = trophies.find((x) => x.id === id);
+      const cur = state.counts[id] || 0;
+      setCount(state, id, cur + Number(stepBtn.dataset.step), t ? t.target : 9999);
+      renderDetailPane();
+      renderList();
+      return;
     }
-    if (at === -1) return;
-    var next = list[(at + delta + list.length) % list.length];
-    selectTrophy(next.id);
-  }
-
-  function switchView(name) {
-    var names = ['checklist', 'roadmap', 'missables', 'nextup', 'complete', 'sources'];
-    names.forEach(function (n) {
-      var el = $('view-' + n);
-      if (el) el.classList.toggle('is-active', n === name);
-    });
-    document.querySelectorAll('[data-view]').forEach(function (btn) {
-      btn.classList.toggle('is-active', btn.getAttribute('data-view') === name);
-    });
-  }
-
-  function wireEvents() {
-    document.querySelectorAll('[data-view]').forEach(function (btn) {
-      btn.addEventListener('click', function () { switchView(btn.getAttribute('data-view')); });
-    });
-    document.querySelectorAll('[data-kind]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        activeKind = btn.getAttribute('data-kind');
-        document.querySelectorAll('[data-kind]').forEach(function (b) {
-          b.classList.toggle('is-active', b === btn);
-        });
-        renderChecklist();
-      });
-    });
-    var search = $('search');
-    if (search) {
-      search.addEventListener('input', function () {
-        query = search.value;
-        renderChecklist();
-      });
+    const openBtn = e.target.closest("[data-trophy-id]");
+    if (openBtn && openBtn.dataset.trophyId) {
+      selectTrophy(openBtn.dataset.trophyId);
+      return;
     }
-    var toggle = $('spoiler-toggle');
-    if (toggle) {
-      toggle.addEventListener('click', function () {
-        store.setSpoiler(state, !state.spoiler);
-        renderAll();
-      });
+    if (e.target.id === "prev-btn") selectNeighbour(-1);
+    if (e.target.id === "next-btn") selectNeighbour(1);
+  });
+  document.addEventListener("change", (e) => {
+    const box = e.target.closest("[data-task]");
+    if (box) {
+      toggleTask(state, Number(box.dataset.task));
+      renderRoadmap(roadmap, state);
+      renderHeader();
+      paintStrip();
     }
-    document.addEventListener('click', function (ev) {
-      var earnBtn = ev.target.closest('[data-earn]');
-      if (earnBtn) {
-        var id = earnBtn.getAttribute('data-earn');
-        store.toggleEarned(state, id);
-        renderAll();
-        return;
-      }
-      var stepBtn = ev.target.closest('[data-step]');
-      if (stepBtn) {
-        var countId = stepBtn.getAttribute('data-count-id');
-        var delta = parseInt(stepBtn.getAttribute('data-step'), 10) || 0;
-        store.bumpCount(state, countId, delta);
-        renderAll();
-        return;
-      }
-      var navBtn = ev.target.closest('[data-nav]');
-      if (navBtn) {
-        stepTrophy(state.selected, navBtn.getAttribute('data-nav') === 'prev' ? -1 : 1);
-        return;
-      }
-      var completeBtn = ev.target.closest('[data-complete]');
-      if (completeBtn) {
-        var idx = parseInt(completeBtn.getAttribute('data-complete'), 10);
-        store.toggleComplete(state, idx);
-        renderComplete();
-        return;
-      }
-      var row = ev.target.closest('.trophy-row');
-      if (row) {
-        selectTrophy(row.getAttribute('data-trophy-id'));
-        return;
-      }
-      var nextItem = ev.target.closest('.nextup-item');
-      if (nextItem) {
-        selectTrophy(nextItem.getAttribute('data-trophy-id'));
-        switchView('checklist');
-        return;
-      }
-      var stageTrophy = ev.target.closest('.stage-trophy');
-      if (stageTrophy) {
-        selectTrophy(stageTrophy.getAttribute('data-trophy-id'));
-        switchView('checklist');
-        return;
-      }
-    });
-  }
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && e.target.matches && e.target.matches(".trophy-row")) {
+      selectTrophy(e.target.dataset.trophyId);
+    }
+  });
+  // Export / import / reset / print.
+  $("#export-btn").addEventListener("click", () => download("leonida-platinum-progress.json", exportState(state)));
+  $("#import-btn").addEventListener("click", () => $("#import-file").click());
+  $("#import-file").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      state = importState(await file.text());
+      syncToolbar();
+      renderView();
+    } catch {
+      alert("That file is not a Leonida Platinum save.");
+    }
+    e.target.value = "";
+  });
+  $("#reset-btn").addEventListener("click", () => {
+    if (confirm("Clear all earned trophies, counters and roadmap ticks?")) {
+      state = resetState();
+      syncToolbar();
+      renderView();
+    }
+  });
+  $("#print-btn").addEventListener("click", () => window.print());
+}
 
-  function init() {
-    return Promise.all([
-      fetch('./data/trophies.json').then(function (r) { return r.json(); }),
-      fetch('./data/roadmap.json').then(function (r) { return r.json(); })
-    ]).then(function (results) {
-      data = results[0];
-      roadmap = results[1];
-      if (!state.selected) {
-        state.selected = 'positive-mental-attitude';
-      }
-      wireEvents();
-      renderAll();
-      switchView('checklist');
-    }).catch(function (err) {
-      var pane = $('detail-pane');
-      if (pane) pane.innerHTML = '<p class="error">Could not load the trophy data. ' + views.esc(err.message) + '</p>';
-    });
-  }
+function syncToolbar() {
+  $("#search").value = state.query || "";
+  $("#kind-filter").value = state.kind;
+  $("#grade-filter").value = state.grade;
+  $("#stage-filter").value = state.stage;
+  $("#sort-select").value = state.sort;
+  $("#earned-filter").value = state.showEarned;
+  $("#spoiler-toggle").textContent = state.spoiler ? "Spoilers: hidden" : "Spoilers: shown";
+  $("#spoiler-toggle").setAttribute("aria-pressed", String(state.spoiler));
+}
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-})();
+async function boot() {
+  const [tData, rData] = await Promise.all([
+    fetch("data/trophies.json").then((r) => r.json()),
+    fetch("data/roadmap.json").then((r) => r.json()),
+  ]);
+  trophies = tData.trophies;
+  meta = tData.meta;
+  roadmap = rData;
+  // Deep-link a view: #view=roadmap etc.
+  const hash = new URLSearchParams(location.hash.slice(1));
+  if (VIEWS.includes(hash.get("view"))) state.view = hash.get("view");
+  syncToolbar();
+  wire();
+  renderView();
+}
+
+boot().catch((err) => {
+  document.body.innerHTML = `<main class="load-error"><h1>Leonida Platinum could not load</h1><p>The guide needs its data files (data/trophies.json and data/roadmap.json) next to index.html. ${err.message}</p></main>`;
+});

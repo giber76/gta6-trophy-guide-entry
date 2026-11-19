@@ -1,59 +1,46 @@
-// Leonida Platinum — the entrypoint for this gta6-trophy-guide-01 submission.
+// Leonida Platinum — entrypoint (Node 22, standard library only).
 //
-// What this program does, in plain terms: it takes the finished guide (the
-// static files in app/) and the screenshots (in screenshots/) and publishes
-// them into the output directory the grader reads, then writes a dossier.json
-// that summarises the entry for the judge. The dossier is produced by the
-// vendored make.fun library, which the scorer requires to be byte for byte
-// what its own copy writes, so this file does not build the dossier by hand.
+// The guide itself is plain static files in app/: open app/index.html in a
+// desktop browser and it works with the network off. This file is the
+// hand-in step: it copies app/ and screenshots/ into the output directory
+// the grader reads, then writes dossier.json — the summary the judge reads
+// (screenshots, first-load files and bytes, and the source outline) — using
+// the vendored make.fun library. Leave vendor/makefun-frontend.ts alone:
+// the scorer requires dossier.json to be byte for byte what its own copy
+// of that library writes.
 //
-// The guide itself is plain static files: app/index.html plus its CSS and
-// JavaScript, with the trophy data in app/data/trophies.json and the roadmap
-// in app/data/roadmap.json. Nothing is fetched over the network, so the app
-// works fully offline. To look at it locally, run `node serve.ts` and open
-// http://localhost:8080.
-//
-// To run this entrypoint outside the grader's container, point the output
-// directory at a folder of your choice:
+// Run it locally with:
 //   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
+// then serve the output with any static server, or open out/app/index.html.
+// Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output.
 
-import { cpSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { buildDossier } from './vendor/makefun-frontend.ts';
+import { cpSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { buildDossier } from "./vendor/makefun-frontend.ts";
 
-// The folder this file lives in, so the app/ and screenshots/ beside it can
-// always be found no matter where the program is started from.
-const repoRoot = fileURLToPath(new URL('.', import.meta.url));
+const here = fileURLToPath(new URL(".", import.meta.url));
+const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
 
-// The grader reads /output. Outside the grader, MAKEFUN_OUTPUT_DIR stands
-// in for it, which is how the entry is tested locally.
-const outputDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
-
-// Publish the guide and its screenshots into the output directory.
-function publishAssets() {
-  mkdirSync(outputDir, { recursive: true });
-  cpSync(join(repoRoot, 'app'), join(outputDir, 'app'), { recursive: true });
-  mkdirSync(join(outputDir, 'screenshots'), { recursive: true });
-  const shotsDir = join(repoRoot, 'screenshots');
-  if (existsSync(shotsDir)) {
-    cpSync(shotsDir, join(outputDir, 'screenshots'), { recursive: true });
+function handIn() {
+  mkdirSync(outDir, { recursive: true });
+  cpSync(join(here, "app"), join(outDir, "app"), { recursive: true });
+  mkdirSync(join(outDir, "screenshots"), { recursive: true });
+  if (existsSync(join(here, "screenshots"))) {
+    cpSync(join(here, "screenshots"), join(outDir, "screenshots"), { recursive: true });
   }
-}
-
-// Write the dossier the judge reads. The caps come from the scorer's own
-// reference, so an entry that passes here will not be refused for size:
-// at most 163840 bytes of text, at most 4 screenshots of 262144 bytes each,
-// and at most 993 files totalling 48 MiB inside app/.
-function writeDossier() {
-  const dossier = buildDossier(outputDir, {
+  // The scorer's own caps (reference/gate.json): text_max_bytes shapes the
+  // dossier bytes; the rest refuse an entry the scorer would refuse — more
+  // than 4 screenshots or one over 256 KiB; more than 993 files and
+  // directories in app/ or 48 MiB of app files.
+  const dossier = buildDossier(outDir, {
     text_max_bytes: 163840,
     screenshots: { max: 4, max_bytes: 262144 },
     app_max_files: 993,
     app_max_bytes: 50331648,
   });
-  writeFileSync(join(outputDir, 'dossier.json'), dossier);
+  writeFileSync(join(outDir, "dossier.json"), dossier);
+  console.log(`Leonida Platinum handed in to ${outDir}`);
 }
 
-publishAssets();
-writeDossier();
+handIn();

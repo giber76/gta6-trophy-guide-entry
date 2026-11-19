@@ -3,96 +3,138 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Leonida Platinum — GTA VI Trophy Guide &amp; Tracker</title>
-<link rel="stylesheet" href="./css/guide.css">
+<title>Leonida Platinum — the GTA VI trophy guide &amp; tracker</title>
+<meta name="description" content="An offline guide and tracker for all 55 Grand Theft Auto VI trophies on PlayStation 5: every guide cites its sources, with a roadmap to the platinum, a planner, a route and a spoiler setting.">
+<link rel="stylesheet" href="css/guide.css">
 </head>
 <body>
-<header class="app-header">
-  <div class="header-inner">
-    <div class="header-title">
-      <h1>Leonida Platinum</h1>
-      <p class="header-sub">Grand Theft Auto VI — all 55 PS5 trophies, offline guide &amp; tracker</p>
+<header class="masthead">
+  <div class="masthead-title">
+    <h1>Leonida Platinum</h1>
+    <p class="tagline">The GTA VI trophy guide &amp; tracker — all 55 PS5 trophies, offline, with sources on every guide.</p>
+  </div>
+  <div class="masthead-progress">
+    <div class="progress-ring">
+      <strong><span id="earned-count">0</span><span id="earned-total">/ 55</span></strong>
+      <span class="progress-label">trophies earned</span>
     </div>
-    <div class="header-progress">
-      <span class="progress-label">Earned</span>
-      <span class="progress-count"><span id="earned-count">0</span> <span id="earned-total">/ 55</span></span>
-      <button id="spoiler-toggle" class="spoiler-toggle" aria-pressed="false">Hide story spoilers</button>
-    </div>
+    <div class="progress-bar"><div id="progress-fill" style="width:0%"></div></div>
+    <span id="hours-left" class="hours-left">~200h left</span>
   </div>
 </header>
 
-<nav class="tabs" aria-label="Sections">
-  <button class="tab is-active" data-view="checklist">Checklist</button>
-  <button class="tab" data-view="roadmap">Roadmap</button>
-  <button class="tab" data-view="missables">Missables</button>
-  <button class="tab" data-view="nextup">Next up</button>
-  <button class="tab" data-view="complete">100% checklist</button>
-  <button class="tab" data-view="sources">Sources</button>
+<nav class="tabs" aria-label="Guide sections">
+  <button data-view="checklist" class="is-active">Checklist</button>
+  <button data-view="nextup">Next up</button>
+  <button data-view="route">Route</button>
+  <button data-view="roadmap">Roadmap</button>
+  <button data-view="stats">Stats</button>
+  <button data-view="missables">Missables</button>
+  <button data-view="complete">100% checklist</button>
+  <button data-view="sources">Sources</button>
 </nav>
 
+<section id="roadmap-strip" aria-label="Roadmap stages"></section>
+
 <main>
-  <section id="view-checklist" class="view is-active">
-    <div id="roadmap-strip" class="roadmap-strip" aria-label="Roadmap progress"></div>
+  <section class="view" id="view-checklist">
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Search trophies, missions, places…" aria-label="Search trophies">
+      <select id="kind-filter" aria-label="Filter by kind">
+        <option value="all">All kinds</option>
+        <option value="story">Story</option>
+        <option value="quest">Questlines</option>
+        <option value="activity">Activities</option>
+        <option value="collectible">Collectibles</option>
+        <option value="robbery">Robberies</option>
+        <option value="misc">Miscellaneous</option>
+        <option value="completion">Completion</option>
+      </select>
+      <select id="grade-filter" aria-label="Filter by grade">
+        <option value="all">All grades</option>
+        <option value="platinum">Platinum</option>
+        <option value="gold">Gold</option>
+        <option value="silver">Silver</option>
+        <option value="bronze">Bronze</option>
+      </select>
+      <select id="stage-filter" aria-label="Filter by roadmap stage">
+        <option value="all">All stages</option>
+        <option value="1">Stage 1 · Prep &amp; Ch. 1</option>
+        <option value="2">Stage 2 · Story Ch. 2–4</option>
+        <option value="3">Stage 3 · Finale &amp; 100%</option>
+        <option value="4">Stage 4 · Robberies &amp; counts</option>
+        <option value="5">Stage 5 · Cleanup &amp; platinum</option>
+      </select>
+      <select id="sort-select" aria-label="Sort trophies">
+        <option value="roadmap">Sort: roadmap order</option>
+        <option value="grade">Sort: grade</option>
+        <option value="name">Sort: name</option>
+        <option value="kind">Sort: kind</option>
+      </select>
+      <select id="earned-filter" aria-label="Show earned or not earned">
+        <option value="all">Show: all</option>
+        <option value="todo">Show: not earned</option>
+        <option value="earned">Show: earned</option>
+      </select>
+      <button id="spoiler-toggle" aria-pressed="false">Spoilers: shown</button>
+    </div>
+    <p id="result-line" class="result-line"></p>
     <div class="checklist-layout">
-      <div class="list-col">
-        <div class="controls">
-          <input id="search" type="search" placeholder="Search trophies…" aria-label="Search trophies">
-          <div class="kind-filters" role="group" aria-label="Filter by kind">
-            <button class="kind-btn is-active" data-kind="all">All</button>
-            <button class="kind-btn" data-kind="story">Story</button>
-            <button class="kind-btn" data-kind="activities">Activities</button>
-            <button class="kind-btn" data-kind="collectibles">Collectibles</button>
-            <button class="kind-btn" data-kind="combat">Combat</button>
-            <button class="kind-btn" data-kind="robberies">Robberies</button>
-            <button class="kind-btn" data-kind="exploration">Exploration</button>
-            <button class="kind-btn" data-kind="money">Money</button>
-            <button class="kind-btn" data-kind="platinum">Platinum</button>
-          </div>
-          <p id="result-line" class="result-line">Showing 55 of 55 trophies</p>
-        </div>
-        <div id="trophy-list" class="trophy-list"></div>
-      </div>
-      <aside id="detail-pane" class="detail-pane" aria-label="Trophy detail"></aside>
+      <div id="trophy-list" class="trophy-list"></div>
+      <aside id="detail-pane" class="detail-pane" aria-label="Trophy guide"></aside>
     </div>
   </section>
 
-  <section id="view-roadmap" class="view">
-    <h2>Roadmap</h2>
-    <p class="view-intro">Five stages, in the order that makes the most sense to play them. Finish the story first, then the character questlines, then the activities and races, then the collectibles and money, and finally the cleanup that leads to the platinum.</p>
-    <div id="roadmap-stages"></div>
+  <section class="view" id="view-nextup" hidden>
+    <h2>Next up — your planner</h2>
+    <p id="nextup-note" class="view-intro"></p>
+    <div id="nextup-list" class="nextup-list"></div>
   </section>
 
-  <section id="view-missables" class="view">
-    <h2>Missables</h2>
-    <p class="view-intro">Only one trophy in the whole set might be missable. Everything else can be done after the story.</p>
-    <div id="missables-cards"></div>
+  <section class="view" id="view-route" hidden>
+    <h2>Route — what to do, and when</h2>
+    <p class="view-intro">The order that avoids backtracking. Work a chapter's list while you are in it; the habits at the bottom fill in as you travel.</p>
+    <div id="route-body"></div>
   </section>
 
-  <section id="view-nextup" class="view">
-    <h2>Next up</h2>
-    <p class="view-intro">The next eight trophies to go for, in priority order. The story comes first, then the one possibly missable trophy, then the character questlines and the activities that feed the 100% checklist.</p>
-    <ol id="nextup-list" class="nextup-list"></ol>
+  <section class="view" id="view-roadmap" hidden>
+    <h2>Roadmap to the platinum</h2>
+    <p class="view-intro">Five stages, about 200 hours in total. Tick tasks off as you go — your ticks are saved in this browser.</p>
+    <div id="roadmap-body"></div>
   </section>
 
-  <section id="view-complete" class="view">
-    <h2>100% completion checklist</h2>
-    <p class="view-intro">The 35 items on the in-game 100% completion checklist. It appears under Progress, then Stats, then 100% Completion only after the story ends, and progress you made during the story already counts. Tap an item to mark it done.</p>
-    <ol class="completion-list" id="completion-list"></ol>
+  <section class="view" id="view-stats" hidden>
+    <h2>Stats — where you stand</h2>
+    <div id="stats-body"></div>
   </section>
 
-  <section id="view-sources" class="view">
+  <section class="view" id="view-missables" hidden>
+    <h2>Missables — the one thing that can go wrong</h2>
+    <p class="view-intro">Only one trophy in the game may be missable. Everything else can be done after the story in free-roam.</p>
+    <div id="missables-body"></div>
+  </section>
+
+  <section class="view" id="view-complete" hidden>
+    <h2>100% checklist — A Long Road</h2>
+    <div id="complete-body"></div>
+  </section>
+
+  <section class="view" id="view-sources" hidden>
     <h2>Sources</h2>
-    <div id="sources-body"></div>
   </section>
 </main>
 
-<footer class="app-footer">
-  <p>Leonida Platinum — an offline guide for the 55 GTA VI PS5 trophies. No network requests, no tracking. Trophy names, descriptions, and grades are as PlayStation publishes them; the guide text is the author&rsquo;s own writing.</p>
+<footer class="page-foot">
+  <div class="foot-actions">
+    <button id="export-btn">Export progress</button>
+    <button id="import-btn">Import progress</button>
+    <input id="import-file" type="file" accept="application/json" hidden>
+    <button id="print-btn">Print checklist</button>
+    <button id="reset-btn">Reset progress</button>
+  </div>
+  <p>Leonida Platinum — an offline guide for the 55 PlayStation 5 trophies of Grand Theft Auto VI. Progress is saved in this browser only. Sources: PowerPyx, GTAbase, Exophase, PSNProfiles. Not affiliated with Rockstar Games.</p>
 </footer>
 
-<script src="./js/store.js"></script>
-<script src="./js/filters.js"></script>
-<script src="./js/views.js"></script>
-<script src="./js/main.js"></script>
+<script type="module" src="js/main.js"></script>
 </body>
 </html>
