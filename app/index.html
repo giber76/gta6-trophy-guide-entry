@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leonida Platinum — GTA VI Trophy Guide &amp; Tracker</title>
+<meta name="description" content="The complete offline guide and tracker for all 55 Grand Theft Auto VI trophies on PlayStation 5: official list, roadmap to the Platinum, missable flags, and a cited guide for every trophy.">
+<link rel="stylesheet" href="css/guide.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand">
+      <p class="kicker">Grand Theft Auto VI &middot; PlayStation 5 &middot; Offline guide</p>
+      <h1>Leonida Platinum</h1>
+      <p class="tagline">Every one of the 55 trophies, with a roadmap to the Platinum, the missables flagged, and a cited guide for each — in your browser, with no network.</p>
+    </div>
+    <div class="progress-card" id="progress-card" aria-live="polite">
+      <div class="ring-wrap">
+        <svg class="ring" viewBox="0 0 120 120" width="104" height="104" aria-hidden="true">
+          <circle class="ring-track" cx="60" cy="60" r="52"></circle>
+          <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="52"></circle>
+        </svg>
+        <div class="ring-text"><strong id="earned-count">0</strong><span>/ 55</span></div>
+      </div>
+      <div class="progress-lines">
+        <p class="progress-pct" id="earned-pct">0% to the Platinum</p>
+        <p class="grade-line" id="grade-line">Platinum 0/1 &middot; Gold 0/2 &middot; Silver 0/6 &middot; Bronze 0/46</p>
+        <p class="next-line" id="next-line">Start with the story — Chapter 1.</p>
+      </div>
+    </div>
+  </div>
+  <nav class="tabs" aria-label="Guide sections">
+    <button class="tab active" data-view="checklist" type="button">Checklist</button>
+    <button class="tab" data-view="roadmap" type="button">Roadmap</button>
+    <button class="tab" data-view="missables" type="button">Missables <span class="tab-badge" id="missable-badge">9</span></button>
+    <button class="tab" data-view="complete" type="button">100% List</button>
+    <button class="tab" data-view="sources" type="button">Sources &amp; Notes</button>
+  </nav>
+</header>
+
+<main>
+  <section id="view-checklist" class="view active">
+    <div class="toolbar" id="toolbar">
+      <div class="search-wrap">
+        <label for="search">Search</label>
+        <input id="search" type="search" placeholder="Search a trophy, mission or keyword…" autocomplete="off">
+      </div>
+      <div class="chips" id="kind-chips" role="group" aria-label="Filter by kind">
+        <button class="chip active" data-kind="all" type="button">All 55</button>
+        <button class="chip" data-kind="story" type="button">Story</button>
+        <button class="chip" data-kind="missable" type="button">Missable</button>
+        <button class="chip" data-kind="collectible" type="button">Collectibles</button>
+        <button class="chip" data-kind="activity" type="button">Activities</button>
+        <button class="chip" data-kind="crime" type="button">Crime</button>
+        <button class="chip" data-kind="completion" type="button">Completion</button>
+      </div>
+      <div class="toolbar-controls">
+        <label class="select-label">Grade
+          <select id="grade-filter">
+            <option value="all">All grades</option>
+            <option value="platinum">Platinum</option>
+            <option value="gold">Gold</option>
+            <option value="silver">Silver</option>
+            <option value="bronze">Bronze</option>
+          </select>
+        </label>
+        <label class="toggle"><input type="checkbox" id="earned-only"> Earned only</label>
+        <label class="toggle spoiler-toggle"><input type="checkbox" id="spoiler-toggle"> Hide story spoilers</label>
+        <span class="spacer"></span>
+        <button class="btn" id="export-btn" type="button">Export progress</button>
+        <button class="btn" id="import-btn" type="button">Import progress</button>
+        <input type="file" id="import-file" accept="application/json,.json" hidden>
+        <button class="btn btn-quiet" id="reset-btn" type="button">Reset</button>
+      </div>
+      <p class="result-line" id="result-line">Showing 55 of 55 trophies.</p>
+    </div>
+    <div class="split">
+      <div class="list-col">
+        <ol class="trophy-list" id="trophy-list"></ol>
+      </div>
+      <aside class="detail-col" id="detail-pane" aria-live="polite"></aside>
+    </div>
+  </section>
+
+  <section id="view-roadmap" class="view">
+    <div class="page-intro">
+      <h2>Road to the Platinum</h2>
+      <p>Five stages, in the order to play them. The stages are built from the official descriptions: which story chapters and missions, which collectibles and counts, and what order they fall in.</p>
+    </div>
+    <div class="save-callout" id="save-callout"></div>
+    <div id="roadmap-stages"></div>
+  </section>
+
+  <section id="view-missables" class="view">
+    <div class="page-intro">
+      <h2>Missable trophies</h2>
+      <p>One trophy is confirmed missable. Eight more are at risk: the game has no mission replay, so a one-off moment that passes may not come back. Everything else on the list is safe — story progression or repeatable in free roam.</p>
+    </div>
+    <div id="missables-list"></div>
+  </section>
+
+  <section id="view-complete" class="view">
+    <div class="page-intro">
+      <h2>100% completion — the 35 tasks</h2>
+      <p>The list behind <strong>A Long Road</strong> (Gold). Reported by Insider Gaming, via GTA VI Vice City Hub. Its targets run higher than the matching trophies — 300 stunts against 250, 70 challenges against 50 — so the cleanup keeps going after those trophies pop.</p>
+    </div>
+    <div class="completion-head">
+      <p><strong id="completion-count">0 / 35</strong> tasks done</p>
+      <div class="mini-bar"><span id="completion-bar"></span></div>
+    </div>
+    <ol class="completion-list" id="completion-list"></ol>
+  </section>
+
+  <section id="view-sources" class="view">
+    <div class="page-intro">
+      <h2>Sources &amp; notes</h2>
+      <p>Where every fact in this guide comes from — and what this guide does not yet know. The game launched the day this guide was written, so some triggers are still unconfirmed in play, and this guide says so instead of guessing.</p>
+    </div>
+    <div id="sources-list"></div>
+  </section>
+</main>
+
+<footer class="colophon">
+  <p><strong>Leonida Platinum</strong> — an unofficial, open-source trophy guide for Grand Theft Auto VI on PlayStation 5. Not affiliated with Rockstar Games, Sony or PlayStation. No Rockstar logo or official artwork is used anywhere in this guide.</p>
+  <p>Names, descriptions and grades are PlayStation's, as listed by Exophase and PSNProfiles. Guides are this guide's own words. Works offline: it loads nothing from the network.</p>
+</footer>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
