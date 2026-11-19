@@ -1,61 +1,89 @@
-// Leonida Platinum — filters, search and the spoiler rule.
-//
-// The filters are the ones the trophy list asks for: kind (story, missable,
-// collectibles, activities, crime, completion), grade, earned-only, and a
-// free-text search over name, description, mission and guide. The spoiler
-// rule hides a story trophy's name, description and guide until it is earned.
+var PRIORITY_ORDER = [
+  'just-like-paradise', 'paradise-lost', 'ts-ass-drug-money', 'positive-mental-attitude',
+  'vice-city-baby', 'top-of-the-world-ma', 'you-gotta-know-when-to-get-off', 'trust',
+  'break-the-bank', 'family-matters', 'dwnfall', 'hi-jacked', 'snow-storm',
+  'road-to-rehabilitation', 'this-was-no-boat-accident', 'the-lone-rider', 'supply-demand',
+  'spin-on-this', 'master-of-none', 'whip-it-good', 'baited-my-tackle', 'stick-fiddler',
+  'cunning-stunts', 'one-last-thing', 'the-shootist', 'top-fun', 'earn-cash-not-kudos',
+  'strangers-freaks', 'dont-touch-my-deck', 'you-wainker', 'hot-together', 'retail-therapy',
+  'gunslinger', 'sneakthief', 'maximum-withdrawal', 'a-classic-blitz-play', 'the-goodtime-state',
+  'pest-control', 'dime-on-the-dollar', 'treat-yo-self', 'little-boxes', 'on-the-spot',
+  'catch-me-if-you-can', 'challenging-tank', 'capital-offense', 'lets-go-bowling',
+  'personal-best', 'actions-speak-louder', 'fair-game', 'bad-luck-i-guess',
+  'the-truth-is-out-there', 'in-the-beginning', 'ten-pin', 'a-long-road', 'vice-got-a-price'
+];
 
-export const KIND_LABELS = {
-  story: 'Story',
-  missable: 'Missable',
-  collectible: 'Collectible',
-  activity: 'Activity',
-  crime: 'Crime',
-  completion: 'Completion',
+function kindLabel(kind) {
+  var labels = {
+    all: 'All trophies',
+    platinum: 'Platinum',
+    story: 'Story',
+    activities: 'Activities',
+    collectibles: 'Collectibles',
+    combat: 'Combat',
+    robberies: 'Robberies',
+    exploration: 'Exploration',
+    money: 'Money'
+  };
+  return labels[kind] || kind;
+}
+
+function filterByKind(trophies, kind) {
+  if (!kind || kind === 'all') return trophies.slice();
+  return trophies.filter(function (t) { return t.kind === kind; });
+}
+
+function searchTrophies(trophies, query) {
+  var q = (query || '').trim().toLowerCase();
+  if (!q) return trophies.slice();
+  return trophies.filter(function (t) {
+    return t.name.toLowerCase().indexOf(q) !== -1 ||
+      t.description.toLowerCase().indexOf(q) !== -1 ||
+      t.id.toLowerCase().indexOf(q) !== -1;
+  });
+}
+
+function applyFilters(trophies, kind, query) {
+  return searchTrophies(filterByKind(trophies, kind), query);
+}
+
+function displayName(trophy, spoilerOn) {
+  if (spoilerOn && trophy.hidden && trophy.kind === 'story') return 'Hidden story trophy';
+  return trophy.name;
+}
+
+function isNameMasked(trophy, spoilerOn) {
+  return !!(spoilerOn && trophy.hidden && trophy.kind === 'story');
+}
+
+function nextUp(trophies, state, limit) {
+  var byId = {};
+  trophies.forEach(function (t) { byId[t.id] = t; });
+  var ordered = [];
+  PRIORITY_ORDER.forEach(function (id) {
+    if (byId[id]) ordered.push(byId[id]);
+  });
+  trophies.forEach(function (t) {
+    if (PRIORITY_ORDER.indexOf(t.id) === -1) ordered.push(t);
+  });
+  var open = ordered.filter(function (t) { return state.earned.indexOf(t.id) === -1; });
+  return open.slice(0, limit || 8);
+}
+
+function countProgress(state, trophy) {
+  if (!trophy.count) return null;
+  var current = state.counts[trophy.id] || 0;
+  return { current: current, target: trophy.count.target, unit: trophy.count.unit, done: current >= trophy.count.target };
+}
+
+window.LeonidaFilters = {
+  PRIORITY: PRIORITY_ORDER,
+  kindLabel: kindLabel,
+  filterByKind: filterByKind,
+  search: searchTrophies,
+  apply: applyFilters,
+  displayName: displayName,
+  isMasked: isNameMasked,
+  nextUp: nextUp,
+  countProgress: countProgress
 };
-
-export function blankFilters() {
-  return { kind: 'all', grade: 'all', query: '', earnedOnly: false };
-}
-
-// A story trophy is hidden while the spoiler setting is on and it is not
-// earned yet. Everything else is always shown.
-export function isSpoilerHidden(trophy, state) {
-  if (!state.spoiler) return false;
-  if (trophy.kind !== 'story') return false;
-  return !state.earned.includes(trophy.id);
-}
-
-export function trophyMatches(trophy, filters, state) {
-  if (filters.kind !== 'all') {
-    if (filters.kind === 'missable') {
-      if (trophy.missable !== 'yes' && trophy.missable !== 'risk') return false;
-    } else if (trophy.kind !== filters.kind) {
-      return false;
-    }
-  }
-  if (filters.grade !== 'all' && trophy.grade !== filters.grade) return false;
-  if (filters.earnedOnly && !state.earned.includes(trophy.id)) return false;
-  if (filters.query) {
-    const haystack = [trophy.name, trophy.description, trophy.guide, trophy.kind, trophy.grade]
-      .join(' ')
-      .toLowerCase();
-    if (!haystack.includes(filters.query.toLowerCase())) return false;
-  }
-  return true;
-}
-
-export function visibleTrophies(trophies, filters, state) {
-  return trophies.filter((trophy) => trophyMatches(trophy, filters, state));
-}
-
-// The next trophy to chase: the earliest un-earned trophy in the roadmap's
-// order (story first, then strangers, activities, crime, completion).
-export function nextTrophy(trophies, roadmap, state) {
-  const order = [];
-  for (const stage of roadmap.stages) order.push(...stage.trophyIds);
-  for (const id of order) {
-    if (!state.earned.includes(id)) return trophies.find((trophy) => trophy.id === id) || null;
-  }
-  return null;
-}

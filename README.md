@@ -1,53 +1,60 @@
 # Leonida Platinum — GTA VI Trophy Guide & Tracker
 
-[![gta6-trophy-guide-01](https://make.fun/badge/gta6-trophy-guide-01.svg)](https://make.fun/bounty/gta6-trophy-guide-01?utm_source=github&utm_medium=badge&utm_campaign=gta6-trophy-guide-01)
-[![Rank](https://make.fun/badge/gta6-trophy-guide-01/giber76/gta6-trophy-guide-entry/rank.svg)](https://make.fun/bounty/gta6-trophy-guide-01?utm_source=github&utm_medium=badge&utm_campaign=gta6-trophy-guide-01)
-[![Reward](https://make.fun/badge/gta6-trophy-guide-01/giber76/gta6-trophy-guide-entry/reward.svg)](https://make.fun/bounty/gta6-trophy-guide-01?utm_source=github&utm_medium=badge&utm_campaign=gta6-trophy-guide-01)
+[![Competition](https://make.fun/badge/gta6-trophy-guide-01.svg)](https://make.fun/bounty/gta6-trophy-guide-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-trophy-guide-01)
+[![Rank](https://make.fun/badge/gta6-trophy-guide-01/giber76/gta6-trophy-guide-entry/rank.svg)](https://make.fun/bounty/gta6-trophy-guide-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-trophy-guide-01)
+[![Reward](https://make.fun/badge/gta6-trophy-guide-01/giber76/gta6-trophy-guide-entry/reward.svg)](https://make.fun/bounty/gta6-trophy-guide-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-trophy-guide-01)
 
-An offline guide and tracker for all **55 PlayStation 5 trophies of Grand Theft Auto VI**: the official list with names, descriptions and grades, a checklist saved in the browser, export and import of progress, filters by kind, a spoiler setting that hides story trophies until earned, a roadmap to the Platinum, the missable trophies flagged, a "Next up" planner that shows the next trophies to earn from where you are, and a cited guide for every trophy — in the guide's own words.
+An offline guide and tracker for all 55 Grand Theft Auto VI trophies on PlayStation 5, built for the [gta6-trophy-guide-01](https://make.fun/bounty/gta6-trophy-guide-01) competition on make.fun. Open `app/index.html` in a browser and it works with no network connection at all.
 
-## Try it
+## What it does
 
-Serve `app/` with any static server and open `index.html` in desktop Chrome. It works with the network off — it loads nothing from outside its own files.
+- **Checklist** — all 55 trophies with their grade, description, kind, and a progress counter for the 17 trophies that count something (stunts, vehicles scanned, challenges, and more). Tap a trophy to mark it earned; the header count and the roadmap strip update with it.
+- **Detail pane** — tap any trophy to see its full guide, written in the author's own words, with its sources shown as chips ([S1]–[S4]) before the guide text, a missable or unconfirmed callout where one applies, and a stepper to track its counter.
+- **Roadmap** — five stages in play order (Story First, Side Characters, Activities & Races, Collectibles & Money, Cleanup & Platinum), each with the trophies it covers and how many you have earned.
+- **Missables** — the one trophy that might be missable (Positive Mental Attitude, and only because of a single Chapter 1 meditation), plus a clear statement that the other 54 are safe to do after the story.
+- **Next up** — the next eight trophies to go for, in priority order, so you always know what to do next.
+- **100% checklist** — the 35 items on the in-game 100% completion checklist, each with a short note on what it wants.
+- **Sources** — every source the guide relies on, and an honest note about the five trophies whose triggers are still unconfirmed.
+- **Spoiler toggle** — hides the names of the 28 hidden story trophies until you turn it off.
+- **Offline** — the app makes no network requests. Your progress is saved in the browser's local storage under the key `leonida-platinum-v1`.
 
-```sh
-cd app && python3 -m http.server 8080
-# open http://localhost:8080
-```
+## The trophies
 
-## What it tracks
+1 platinum, 2 gold, 6 silver, 46 bronze. 28 of the 55 are hidden on PlayStation, and they are flagged as hidden in the app. Only one trophy is flagged as possibly missable: Positive Mental Attitude, because the meditation at Jason's house is only available during Chapter 1. The flag is deliberately softened to "possibly" — it is still unclear whether that meditation is actually required.
 
-- **All 55 trophies** — 1 platinum, 2 gold, 6 silver, 46 bronze — each with its official name, description and grade as PlayStation publishes them, and a guide that cites its sources.
-- **Checklist** — tick trophies off; progress is saved in `localStorage`. Counters for the 21 trophies PlayStation tracks with a number (250 stunts, 42 shooting range golds, 100 WAiNK locations, …) have their own steppers, and the current count shows next to the trophy's badges in its detail pane.
-- **Roadmap strip** — above the checklist, the five roadmap stages with their earned counts and a warning naming the missable trophy still open, so the route to the Platinum is always in view.
-- **Next up** — a planner tab listing the next eight trophies to earn, in roadmap order, each with a one-line reason why now; tap one to open its guide.
-- **Filters** — by kind (story, missable, collectibles, activities, crime, completion), by grade, earned-only, and free-text search.
-- **Spoiler setting** — hides the names, descriptions and guides of story trophies until they are earned.
-- **Export / import** — progress exports to a JSON file and imports back.
-- **Roadmap** — five stages in the order to play them, built from the official descriptions, with a save strategy (the game has no mission replay; keep a manual save at the start of every chapter).
-- **Missables** — 1 possibly missable (Positive Mental Attitude: Lucia's balcony meditation in Chapter 1) and 1 at risk (Baited My Tackle: Cal's one-off fishing encounter), each with the chapter or moment where it can be missed. Five trophies that were flagged in the first version — Strangers & Freaks, the five stranger finals, Catch Me If You Can — were checked against PowerPyx and are no longer flagged: they stay available after the story or are repeatable.
-- **100% list** — the 35 tasks behind A Long Road, reported by Insider Gaming, as its own checkable list.
-- **Cited guides** — every trophy's detail pane shows its sources first, as numbered `[S1]` chips with a short named list, then the guide. Guides average 114 words (the longest guides run 200+ words) and name the exact missions, chapters and locations from the sources.
+Five trophies do not have a confirmed trigger yet, and the guide labels all of them as unconfirmed rather than guessing: In The Beginning…, Bad Luck, I Guess, The Truth Is Out There, Ten Pin, and Fair Game (whose exact animal is still being confirmed). Their guides say so plainly and will be updated when a method is published.
 
 ## Sources
 
-- Names, descriptions and grades: [Exophase](https://www.exophase.com/game/grand-theft-auto-vi-psn/trophies/) and [PSNProfiles](https://psnprofiles.com/trophies/43531-grand-theft-auto-vi) (PSN progress counters).
-- Trophy methods, missions and chapters: [PowerPyx](https://www.powerpyx.com/gta-6-grand-theft-auto-vi-trophy-guide-roadmap/) (retrieved 19 November 2026) and GTAbase (retrieved 19 November 2026).
-- 100% completion tasks: Insider Gaming, as reported by [GTA VI Vice City Hub](https://www.gtavicecityhub.com/achievements).
-- Missable notes: [Outputlag](https://outputlag.com/guides/gta-6-trophy-list/).
-- Every trophy's guide names its sources in the app. Guides are this guide's own words, worked out from the official descriptions; the game launched the day this guide was written, so triggers that no public source had confirmed yet are marked as unconfirmed rather than guessed. See **Sources & Notes** in the app.
+- [S1] **Exophase** — official trophy names, descriptions, and grades: https://www.exophase.com/game/grand-theft-auto-vi-psn/trophies/
+- [S2] **GTAbase** — the full 55-trophy list, hidden flags, and roadmap: https://www.gtabase.com/articles/gta-6/gta-6-achievements-trophies-list-ps5-xbox-series
+- [S3] **PowerPyx** — unlock methods and roadmap, retrieved 19 November 2026: https://www.powerpyx.com/gta-6-grand-theft-auto-vi-trophy-guide-roadmap/
+- [S4] **PSNProfiles** — PSN progress targets and grades: https://psnprofiles.com/trophies/43531-grand-theft-auto-vi
 
-## What it is not
+Trophy names, descriptions, and grades are as PlayStation publishes them. The guide text is the author's own writing, based on the sources above.
 
-Unofficial and unaffiliated with Rockstar Games, Sony or PlayStation. No Rockstar logo or official artwork is used anywhere.
+## Run it
 
-## Handing it in
+Serve the `app/` folder and open it in a browser:
 
-`main.ts` (Node 22, standard library only) checks the trophy file names all 55 trophies with a guide, copies `app/` and `screenshots/` to `/output`, and writes `/output/dossier.json` with the vendored `vendor/makefun-frontend.ts` library:
+```sh
+node serve.ts
+# open http://localhost:8080
+```
+
+Or open `app/index.html` directly. No build step and no dependencies.
+
+## How the entry is built
+
+`main.ts` is the entrypoint. It copies `app/` and `screenshots/` into the output directory and writes `dossier.json` with the vendored make.fun library (`vendor/makefun-frontend.ts`), which the scorer requires to be byte for byte what its own copy writes. To run it outside the grader's container:
 
 ```sh
 mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 ```
+
+## Screenshots
+
+The four screenshots in `screenshots/` show the checklist (cover), the roadmap, the missables page, and the Next up planner.
 
 ## License
 
