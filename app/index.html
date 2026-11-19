@@ -34,6 +34,7 @@
     <button class="tab active" data-view="checklist" type="button">Checklist</button>
     <button class="tab" data-view="roadmap" type="button">Roadmap</button>
     <button class="tab" data-view="missables" type="button">Missables <span class="tab-badge" id="missable-badge">9</span></button>
+    <button class="tab" data-view="nextup" type="button">Next up</button>
     <button class="tab" data-view="complete" type="button">100% List</button>
     <button class="tab" data-view="sources" type="button">Sources &amp; Notes</button>
   </nav>
@@ -41,6 +42,7 @@
 
 <main>
   <section id="view-checklist" class="view active">
+    <div class="roadmap-strip" id="roadmap-strip" aria-label="Roadmap progress"></div>
     <div class="toolbar" id="toolbar">
       <div class="search-wrap">
         <label for="search">Search</label>
@@ -95,9 +97,17 @@
   <section id="view-missables" class="view">
     <div class="page-intro">
       <h2>Missable trophies</h2>
-      <p>One trophy is confirmed missable. Eight more are at risk: the game has no mission replay, so a one-off moment that passes may not come back. Everything else on the list is safe — story progression or repeatable in free roam.</p>
+      <p>One trophy is possibly missable, and one more is at risk: the game has no mission replay, so a one-off moment that passes may not come back. Everything else on the list is safe — story progression or repeatable in free roam. PowerPyx confirms the stranger strands and the VCIA plane stunt stay available after the story, so they are not flagged here.</p>
     </div>
     <div id="missables-list"></div>
+  </section>
+
+  <section id="view-nextup" class="view">
+    <div class="page-intro">
+      <h2>Next up</h2>
+      <p>The next trophies to earn, in roadmap order — the fastest route to the Platinum from where you are now. Tap one to open its guide. <strong id="nextup-count"></strong></p>
+    </div>
+    <ol class="nextup-list" id="nextup-list"></ol>
   </section>
 
   <section id="view-complete" class="view">

@@ -22,12 +22,14 @@ import {
   renderCompletion,
   renderDetail,
   renderMissables,
+  renderNextUp,
   renderRoadmap,
+  renderRoadmapStrip,
   renderSources,
   updateProgress,
 } from './views.js';
 
-const VIEWS = ['checklist', 'roadmap', 'missables', 'complete', 'sources'];
+const VIEWS = ['checklist', 'roadmap', 'missables', 'nextup', 'complete', 'sources'];
 
 async function loadJson(path) {
   const response = await fetch(path);
@@ -58,9 +60,11 @@ async function boot() {
   function renderAll() {
     updateProgress(trophies, roadmap, state);
     renderChecklist(trophies, filters, state, selectTrophy, toggleTrophy);
-    renderDetail(trophies, sources, state, toggleTrophy, changeCount);
+    renderDetail(trophies, sources, state, toggleTrophy, changeCount, selectTrophy);
     renderRoadmap(trophies, roadmap, state);
+    renderRoadmapStrip(trophies, roadmap, state);
     renderMissables(trophies, state);
+    renderNextUp(trophies, roadmap, state, selectTrophy);
     renderCompletion(roadmap, state);
     renderSources(sources, roadmap);
   }
@@ -69,7 +73,7 @@ async function boot() {
     state.selected = id;
     saveState(state);
     renderChecklist(trophies, filters, state, selectTrophy, toggleTrophy);
-    renderDetail(trophies, sources, state, toggleTrophy, changeCount);
+    renderDetail(trophies, sources, state, toggleTrophy, changeCount, selectTrophy);
     const pane = document.getElementById('detail-pane');
     if (pane && window.innerWidth <= 900) pane.scrollIntoView({ behavior: 'smooth' });
   }
@@ -118,7 +122,7 @@ async function boot() {
     state.spoiler = event.target.checked;
     saveState(state);
     renderChecklist(trophies, filters, state, selectTrophy, toggleTrophy);
-    renderDetail(trophies, sources, state, toggleTrophy, changeCount);
+    renderDetail(trophies, sources, state, toggleTrophy, changeCount, selectTrophy);
   });
 
   // Export, import, reset.
