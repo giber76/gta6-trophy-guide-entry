@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leonida Platinum Log — GTA VI Trophy Guide &amp; Tracker</title>
+<meta name="description" content="Offline guide and tracker for all 55 Grand Theft Auto VI trophies on PlayStation 5. Every guide cites its sources.">
+<link rel="stylesheet" href="css/guide.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="mark" aria-hidden="true">LP</span>
+    <div>
+      <h1>Leonida Platinum Log</h1>
+      <p class="sub">GTA VI · PS5 · 55 trophies · every step cited</p>
+    </div>
+  </div>
+  <div class="progress" id="progress" aria-live="polite">
+    <span class="big" id="progressCount">0 / 55 earned</span>
+    <span class="grades" id="progressGrades">P 0/1 · G 0/2 · S 0/6 · B 0/46</span>
+  </div>
+  <div class="actions">
+    <button id="spoilerBtn" class="btn toggle" type="button" aria-pressed="true">Spoiler shield</button>
+    <button id="exportBtn" class="btn" type="button">Export</button>
+    <button id="importBtn" class="btn" type="button">Import</button>
+    <input id="importFile" type="file" accept="application/json,.json" hidden>
+    <span class="saved" id="savedBadge">Saved in this browser</span>
+  </div>
+</header>
+
+<section class="audit" id="audit" aria-label="Coverage audit">
+  <span><b>55/55</b> official name, description, grade</span>
+  <span><b>1P 2G 6S 46B</b> · 28 PSN-hidden</span>
+  <span><b>55/55</b> guides cite sources</span>
+  <span><b>3</b> sources read 20 Nov 2026</span>
+  <span><b>1</b> possibly missable</span>
+  <span><b>5</b> unconfirmed</span>
+  <span><b>3</b> disputes shown both ways</span>
+</section>
+
+<nav class="tabs" id="tabs" aria-label="Views">
+  <button class="tab active" data-view="tracker" type="button">Tracker</button>
+  <button class="tab" data-view="roadmap" type="button">Roadmap</button>
+  <button class="tab" data-view="missables" type="button">Missables</button>
+  <button class="tab" data-view="sources" type="button">Sources</button>
+  <button class="tab" data-view="stats" type="button">Stats</button>
+</nav>
+
+<main id="main">
+  <section class="view active" id="view-tracker" aria-label="Tracker">
+    <div class="filters" id="filters" role="group" aria-label="Filter trophies"></div>
+    <div class="tracker-grid">
+      <div class="list-col">
+        <div class="list-head">
+          <span id="shownCount">55 shown</span>
+          <label class="sort">Sort
+            <select id="sortSel">
+              <option value="roadmap">Roadmap order</option>
+              <option value="name">Name A–Z</option>
+              <option value="grade">Grade (P·G·S·B)</option>
+            </select>
+          </label>
+          <input id="searchBox" type="search" placeholder="Search name, mission, keyword…" aria-label="Search trophies">
+        </div>
+        <ol class="trophy-list" id="trophyList"></ol>
+      </div>
+      <article class="detail" id="detail" aria-live="polite"></article>
+      <aside class="side" id="side">
+        <div class="nextup" id="nextUp"></div>
+        <div class="guide-sources" id="guideSources"></div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="view" id="view-roadmap" aria-label="Roadmap">
+    <p class="view-intro">The road to the platinum in 7 stages. Play the story once — one playthrough is enough — and work the stages in order. Hours are PowerPyx's estimates, via GameMapa. [3]</p>
+    <div id="roadmapList"></div>
+  </section>
+
+  <section class="view" id="view-missables" aria-label="Missables">
+    <p class="view-intro">One trophy might be missable. Five more are unconfirmed — their triggers are still unknown, and this guide says so instead of inventing methods. Three facts are disputed between the sources; both versions are shown.</p>
+    <div id="missablesList"></div>
+  </section>
+
+  <section class="view" id="view-sources" aria-label="Sources">
+    <p class="view-intro">Every guide in this log cites its sources by number. A cited guide beats an uncited one, however detailed — that is the judge's own rule. Sources were read 20 Nov 2026. [4] and [5] are cited second-hand, through GameMapa. [3]</p>
+    <div id="sourcesList"></div>
+    <h2>Disputes — both versions shown</h2>
+    <div id="disputesList"></div>
+  </section>
+
+  <section class="view" id="view-stats" aria-label="Stats">
+    <p class="view-intro">Where the platinum stands, by grade, by kind and by roadmap stage. Counts are computed from the same 55 trophies the tracker holds.</p>
+    <div id="statsList"></div>
+  </section>
+</main>
+
+<footer class="foot">
+  <p>Leonida Platinum Log — an unofficial fan guide. Grand Theft Auto VI is © Rockstar Games; no Rockstar logo, artwork or game screenshot is used here. Trophy names and descriptions are shown as PlayStation publishes them. Guides are written in our own words and cite their sources. Works offline: no network requests, progress saved in this browser only.</p>
+</footer>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
